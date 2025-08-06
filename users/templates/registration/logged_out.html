@@ -1,0 +1,10 @@
+{% extends "learning_logs/base.html" %}
+
+{% block page_header %}
+    <a class="btn btn-lg btn-primary" href="{% url 'learning_logs:index' %}"
+       role="button">Return to the main page &raquo;</a>
+{% endblock page_header %}
+
+{% block content %}
+    <h5>You have been logged out.Thank you for visiting!</h5>
+{% endblock content %}

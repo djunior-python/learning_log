@@ -1,0 +1,25 @@
+{% extends "learning_logs/base.html" %}
+
+{% block page_header %}
+    <h1>Entry deletion form</h1>
+{% endblock page_header %}
+
+{% block content %}
+<div class="container mt-4">
+  <div class="card shadow-sm">
+    <div class="card-body text-center">
+      <h4 class="card-title">Підтвердження видалення</h4>
+      <p class="card-text">Ви впевнені, що хочете <strong class="text-danger">
+          видалити допис</strong> з теми "{{ entry.topic }}"?</p>
+      <form method="post" class="mt-3">
+        {% csrf_token %}
+        <div class="d-flex flex-column flex-md-row justify-content-center gap-2">
+          <button type="submit" class="btn btn-danger mb-2 mb-md-0">Так, видалити</button>
+          <a href="{% url 'learning_logs:topic' topic_id=entry.topic.id %}"
+             class="btn btn-secondary">Скасувати, повернутися до дописів з теми: "{{ entry.topic }}"</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
