@@ -8,14 +8,14 @@
 <div class="container mt-4">
   <div class="card shadow-sm">
     <div class="card-body text-center">
-      <h4 class="card-title">Підтвердження видалення</h4>
-      <p class="card-text">Ви впевнені, що хочете <strong class="text-danger">видалити тему:</strong><br> "{{ topic }}"?</p>
+      <h4 class="card-title">Delete confirmation</h4>
+      <p class="card-text">Are you sure you want to? <strong class="text-danger">delete topic:</strong><br> "{{ topic }}"?</br></p>
 
       <form method="post" class="mt-3">
         {% csrf_token %}
         <div class="d-flex flex-column flex-md-row justify-content-center gap-2">
-          <button type="submit" class="btn btn-danger mb-2 mb-md-0">Так, видалити</button>
-          <a href="{% url 'learning_logs:topics' %}" class="btn btn-secondary">Скасувати, повернутися до списку тем.</a>
+          <button type="submit" class="btn btn-danger mb-2 mb-md-0">Yes, delete</button>
+          <a href="{% url 'learning_logs:topic' topic.id %}" class="btn btn-secondary">Cancel, return to the topic list.</a>
         </div>
       </form>
     </div>

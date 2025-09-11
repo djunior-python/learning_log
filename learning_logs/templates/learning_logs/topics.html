@@ -7,15 +7,39 @@
 {% block content %}
     <ul>
         {% for topic in topics %}
-            <li><h3>
-                <a href="{% url 'learning_logs:topic' topic.id %}">{{ topic }}</a>
-                <a href="{% url 'learning_logs:delete_topic' topic.id %}"
-                   class="btn btn-danger" name="submit" role="button">Видалити</a>
-            </h3></li>
+            <li>
+                <h3>
+                    <a href="{% url 'learning_logs:topic' topic.id %}">{{ topic }}</a>
+                    
+                    <!-- показуємо власника теми -->
+                    {% if topic.owner == user %}
+                        <span class="badge bg-success">It's your topic</span>
+                    {% else %}
+                        <span class="badge bg-secondary">Owner: {{ topic.owner.username }}</span>
+                    {% endif %}
+
+                    <!-- кнопка публікації -->
+                    {% if topic.owner == user %}
+                        {% if not topic.is_public %}
+                            <a href="{% url 'learning_logs:publish_topic' topic.id %}" 
+                                class="btn btn-success btn-sm">
+                                    Publish
+                            </a>
+                        {% else %}
+                            <span class="badge bg-primary">Published</span>
+                        {% endif %}
+                        <!-- кнопка видалення -->
+                        <a href="{% url 'learning_logs:delete_topic' topic.id %}"
+                            class="btn btn-danger btn-sm" role="button">
+                            Delete
+                        </a>
+                    {% endif %}
+                </h3>
+            </li>
         {% empty %}
             <li><h3>No topics have been added yet.</h3></li>
         {% endfor %}
     </ul>
 
-    <h3><a href="{% url 'learning_logs:new_topic' %}">Add a new topic</a></h3>
+    <h3><a href="{% url 'learning_logs:new_topic' %}">Add a topic</a></h3>
 {% endblock content %}

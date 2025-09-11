@@ -7,6 +7,7 @@ class Topic(models.Model):
     text = models.CharField(max_length=200)
     date_added = models.DateTimeField(auto_now_add=True)
     owner = models.ForeignKey(User, on_delete=models.CASCADE)
+    is_public = models.BooleanField(default=False)  
 
     def __str__(self):
         """Повернути рядкове представлення моделі."""
@@ -17,6 +18,8 @@ class Entry(models.Model):
     topic = models.ForeignKey(Topic, on_delete=models.CASCADE)
     text = models.TextField()
     date_added = models.DateTimeField(auto_now_add=True)
+    image = models.ImageField(upload_to='entry_images/', blank=True, null=True)
+    file = models.FileField(upload_to='entry_files/', blank=True, null=True)
 
     class Meta:
         verbose_name_plural = 'entries'
