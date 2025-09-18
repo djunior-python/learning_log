@@ -15,7 +15,7 @@
                     {% if topic.owner == user %}
                         <span class="badge bg-success">It's your topic</span>
                     {% else %}
-                        <span class="badge bg-secondary">Owner: {{ topic.owner.username }}</span>
+                        <span class="badge bg-secondary">Owner: {{ topic.owner.user_name }}</span>
                     {% endif %}
 
                     <!-- кнопка публікації -->

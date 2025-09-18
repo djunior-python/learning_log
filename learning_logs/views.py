@@ -1,15 +1,25 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.http import Http404
+from django.contrib import messages
 
 from .models import Topic, Entry
-from .forms import TopicForm, EntryForm
+from .forms import TopicForm, EntryForm, ComplaintForm
 
 # Create your views here.
 def check_owner(request, topic):
     """Доступ тільки власнику (для редагування, видалення, додавання записів)."""
     if topic.owner != request.user:
         raise Http404
+
+
+def check_blocked(view_func):
+    def wrapper(request, *args, **kwargs):
+        if request.user.is_authenticated and request.user.blocked:
+            messages.error(request, "Your account is blocked. Action impossible.")
+            return redirect("learning_logs:index")
+        return view_func(request, *args, **kwargs)
+    return wrapper
 
 
 def check_owner_or_public(request, topic):
@@ -51,6 +61,7 @@ def topic(request, topic_id):
 
 
 @login_required
+@check_blocked
 def publish_topic(request, topic_id):
     topic = get_object_or_404(Topic, id=topic_id)
     check_owner(request, topic)  # функція перевірки власника
@@ -165,3 +176,21 @@ def delete_entry(request, entry_id):
     context = {'entry': entry}
 
     return render(request, 'learning_logs/confirm_delete_entry.html', context)
+
+
+@login_required
+@check_blocked
+def create_complaint(request, topic_id):
+    topic = get_object_or_404(Topic, id=topic_id)
+    offender = topic.owner  # вважаємо, що власник теми = порушник
+
+    if request.method == "POST":
+        form = ComplaintForm(request.POST, owner=request.user, topic=topic, offender=offender)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Скаргу надіслано модераторам.")
+            return redirect("learning_logs:topic", topic_id=topic.id)
+    else:
+        form = ComplaintForm(owner=request.user, topic=topic, offender=offender)
+
+    return render(request, "learning_logs/create_complaint.html", {"form": form, "topic": topic})

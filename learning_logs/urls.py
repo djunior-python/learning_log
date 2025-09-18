@@ -28,4 +28,6 @@ urlpatterns = [
     path('delete_topic/<int:topic_id>', views.delete_topic, name='delete_topic'),
     # Сторінка в разі видалення допису.
     path('delete_entry/<int:entry_id>', views.delete_entry, name='delete_entry'),
+    # Сторінка для подачі скарги.
+    path('complain/<int:topic_id>/', views.create_complaint, name='create_complaint')
 ]
