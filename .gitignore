@@ -1,15 +1,32 @@
-ll_env/
-.pylintrc
+# Python
 __pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.sqlite3
+*.log
 
-.vscode
-.idea
+# Virtual environment
+ll_env/
+venv/
 .env
-django.log
-security.log
 
+# Django
 db.sqlite3
 media/
-debug.log
 staticfiles/
-migrations/
+debug.log
+
+# IDE & Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# System
+.DS_Store
+Thumbs.db
+
+# Local configs
+django.log
+security.log
