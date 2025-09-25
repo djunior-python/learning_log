@@ -1,6 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseUserManager
 from django.utils.html import strip_tags
+from django.utils import timezone
+import uuid
 
 
 class CustomUserManager(BaseUserManager):
@@ -28,10 +30,12 @@ class CustomUserManager(BaseUserManager):
 class CustomUser(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(unique=True, max_length=254)
     user_name = models.CharField(max_length=50)
-    is_active = models.BooleanField(default=True)
+    is_active = models.BooleanField(default=False)
     is_staff = models.BooleanField(default=False)
     blocked = models.BooleanField(default=False, verbose_name="Blocked")
-
+    email_confirmation_token = models.UUIDField(default=uuid.uuid4)
+    date_joined = models.DateTimeField(default=timezone.now)
+    
     objects = CustomUserManager()
 
     USERNAME_FIELD = 'email'

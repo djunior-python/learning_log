@@ -1,6 +1,7 @@
 """Визначити регулярні вирази URL"""
 
 from django.urls import path, include
+from django.contrib.auth import views as auth_views
 
 from . import views
 
@@ -10,4 +11,5 @@ urlpatterns = [
     path('', include('django.contrib.auth.urls')),
     # Сторінка реєстрації.
     path('register/', views.register, name='register'),
+    path("activate/<str:token>/", views.activate_account, name="activate"),
 ]

@@ -8,4 +8,4 @@ class CustomUserCreationForm(UserCreationForm):
         labels = {
             'user_name': 'Name',
             'email': 'Email address',
-            }
+        }

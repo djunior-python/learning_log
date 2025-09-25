@@ -12,6 +12,7 @@ class Command(BaseCommand):
                 user_name="admin",
                 email="admin@example.com",
                 password=os.environ.get("DJANGO_SUPERUSER_PASSWORD", "holypython123"),
+                is_active=True
             )
             self.stdout.write(self.style.SUCCESS("Суперкористувача створено успішно."))
         else:
