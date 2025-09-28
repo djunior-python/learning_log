@@ -1,12 +1,10 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login
-from django.core.mail import send_mail
-from django.conf import settings
 from django.contrib import messages
-from django.template.loader import render_to_string
 
 from .models import CustomUser
 from .forms import CustomUserCreationForm
+from .utils import send_activation_email
 
 
 def register(request):
@@ -14,27 +12,14 @@ def register(request):
         form = CustomUserCreationForm(request.POST)
         if form.is_valid():
             user = form.save(commit=False)
-            user.is_active = False  # користувач не активний до підтвердження
+            user.is_active = False
             user.save()
 
-            # Генеруємо посилання
-            activation_link = f"{request.scheme}://{request.get_host()}/users/activate/{user.email_confirmation_token}/"
-
-            # Підтягуємо текст з шаблону
-            message = render_to_string("users/email_confirmation_message.txt", {
-                "user": user,
-                "activation_link": activation_link,
-            })
-
-            send_mail(
-                subject="Activate your account",
-                message=message,
-                from_email=settings.DEFAULT_FROM_EMAIL,
-                recipient_list=[user.email],
-            )
+            # Виклик нашої функції
+            send_activation_email(user, request)
 
             messages.success(request, "Please check your email to confirm your account.")
-            return redirect("users:login")
+            return redirect("learning_logs:index")
     else:
         form = CustomUserCreationForm()
 
@@ -45,10 +30,9 @@ def activate_account(request, token):
     user = get_object_or_404(CustomUser, email_confirmation_token=token)
 
     if user.is_active:
-        return render(request, "users/activation_invalid.html")  # вже активований
+        return render(request, "users/activation_invalid.html")
 
     user.is_active = True
     user.save()
-
     login(request, user)
     return render(request, "users/activation_success.html")
