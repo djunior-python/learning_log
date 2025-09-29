@@ -194,3 +194,11 @@ def create_complaint(request, topic_id):
         form = ComplaintForm(owner=request.user, topic=topic, offender=offender)
 
     return render(request, "learning_logs/create_complaint.html", {"form": form, "topic": topic})
+
+
+def community(request):
+    return render(request, "learning_logs/community.html")
+
+
+def about(request):
+    return render(request, "learning_logs/about.html")

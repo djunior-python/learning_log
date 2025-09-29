@@ -29,5 +29,9 @@ urlpatterns = [
     # Сторінка в разі видалення допису.
     path('delete_entry/<int:entry_id>', views.delete_entry, name='delete_entry'),
     # Сторінка для подачі скарги.
-    path('complain/<int:topic_id>/', views.create_complaint, name='create_complaint')
+    path('complain/<int:topic_id>/', views.create_complaint, name='create_complaint'),
+    # Сторінка правил спільноти.
+    path('comunity/', views.community, name='community'),
+    # Сторінка "Про сайт".
+    path('about/', views.about, name='about'),
 ]
