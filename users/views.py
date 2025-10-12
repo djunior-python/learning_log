@@ -15,7 +15,7 @@ def register(request):
             user.is_active = False
             user.save()
 
-            # Виклик нашої функції
+            # Виклик софтової функції для відправки листа з підтвердженням
             send_activation_email(user, request)
 
             messages.success(request, "Please check your email to confirm your account.")

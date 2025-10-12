@@ -92,6 +92,13 @@ STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
+# Security settings
+SECURE_SSL_REDIRECT = True                # Примусово перенаправляє всі HTTP-запити на HTTPS
+SESSION_COOKIE_SECURE = True              # Файли cookie для сесій передаються лише через HTTPS
+CSRF_COOKIE_SECURE = True                 # CSRF-токен також передається лише через HTTPS
+SECURE_BROWSER_XSS_FILTER = True          # Вмикає XSS-фільтр у браузері (додатковий захист)
+SECURE_CONTENT_TYPE_NOSNIFF = True        # Забороняє браузеру "вгадувати" MIME-тип (захист від атак типу MIME sniffing)
+
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
