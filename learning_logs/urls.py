@@ -9,13 +9,15 @@ urlpatterns = [
     # Головна сторінка
     path('', views.index, name='index'),
     # Сторінка, що відображає всі теми.
-    path('my_topics/', views.my_topics, name='my_topics'),
-    # Сторінка, що відображає всі публічні теми.
-    path('other_topics/', views.other_topics, name='other_topics'),
+    path('topics/', views.topics, name='topics'),
     # Сторінка, присвячена окремій темі.
     path('topics/<int:topic_id>/', views.topic, name='topic'),
     # Сторінка для публікації теми
     path('publish_topic/<int:topic_id>/', views.publish_topic, name='publish_topic'),
+    # Сторінка для сортування тем
+    path('filter_topics/', views.filter_topics, name='filter_topics'),
+    # Сторінка для лайку теми
+    path('like_topic/<int:topic_id>/', views.like_topic, name='like_topic'),
     # Сторінка присвячена окремому допису.
     path('entry/<int:entry_id>/', views.entry_detail, name='entry_detail'),
     # Сторінка додавання нової теми

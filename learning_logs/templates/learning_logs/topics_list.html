@@ -1,0 +1,24 @@
+{% for topic in topics %}
+  <div class="card mb-3 shadow-sm">
+    <div class="card-body">
+      <h5 class="card-title">{{ topic.text }}</h5>
+      <p class="text-muted">
+        Owner: {{ topic.owner.user_name }} |
+        {{ topic.date_added|date:"d.m.Y" }} |
+        ❤️ {{ topic.likes.count }}
+      </p>
+      <a href="{% url 'learning_logs:topic' topic.id %}" class="btn btn-outline-primary btn-sm">look through</a>
+      {% if topic.owner == user %}
+        <a href="{% url 'learning_logs:delete_topic' topic.id %}" class="btn btn-outline-warning btn-sm">delete</a>
+      {% endif %}
+      {% if topic.owner == user and topic.is_public != True %}
+        <a href="{% url 'learning_logs:publish_topic' topic.id %}" class="btn btn-outline-dark btn-sm">publish topic</a>
+      {% endif %}
+      {% if topic.owner == user and topic.is_public == True %}
+        <a href="{% url 'learning_logs:publish_topic' topic.id %}" class="btn btn-outline-dark btn-sm">unpublish topic</a>
+      {% endif %}
+    </div>
+  </div>
+{% empty %}
+  <p class="text-center text-muted">No topic found.</p>
+{% endfor %}

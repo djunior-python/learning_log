@@ -18,7 +18,7 @@ def register(request):
             # Виклик софтової функції для відправки листа з підтвердженням
             send_activation_email(user, request)
 
-            messages.success(request, "Please check your email to confirm your account.")
+            messages.success(request, "Please check your email to confirm your account. The message will most likely end up in your <<Spam>> folder.")
             return redirect("learning_logs:index")
     else:
         form = CustomUserCreationForm()

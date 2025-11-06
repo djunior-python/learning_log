@@ -1,6 +1,8 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
-from django.http import Http404
+from django.http import Http404, JsonResponse, HttpResponse
+from django.template.loader import render_to_string
+from django.db.models import Count
 from django.contrib import messages
 
 from .models import Topic, Entry
@@ -41,7 +43,7 @@ def my_topics(request):
     return render(request, 'learning_logs/topics.html', context)
 
 @login_required
-def other_topics(request):
+def topics(request):
     """Відображає всі опублікованні теми."""
     topics = Topic.objects.filter(is_public=True).order_by('date_added')
     context = {'topics': topics}
@@ -65,9 +67,53 @@ def topic(request, topic_id):
 def publish_topic(request, topic_id):
     topic = get_object_or_404(Topic, id=topic_id)
     check_owner(request, topic)  # функція перевірки власника
-    topic.is_public = True
+    
+    if topic.is_public:
+        topic.is_public = False
+    else:
+        topic.is_public = True
     topic.save()
     return redirect('learning_logs:topic', topic_id=topic.id)
+
+
+@login_required
+def filter_topics(request):
+    sort = request.GET.get('sort', '-date_added')
+    filter_type = request.GET.get('type', 'mine')
+
+    topics = Topic.objects.annotate(likes_count=Count('likes'))
+
+    if filter_type == 'mine':
+        topics = topics.filter(owner=request.user)
+    elif filter_type == 'public':
+        topics = topics.filter(is_public=True)
+
+    topics = topics.order_by(sort)
+
+    html = render_to_string('learning_logs/topics_list.html', {'topics': topics}, request=request)
+    return HttpResponse(html)
+
+
+@login_required
+def like_topic(request, topic_id):
+    topic = get_object_or_404(Topic, id=topic_id)
+    if not topic.is_public:
+        return JsonResponse({'error': 'Not public'}, status=403)
+
+    if topic.owner == request.user:
+        return JsonResponse({'error': 'Cannot like your own topic'}, status=400)
+
+    liked = False
+    if request.user in topic.likes.all():
+        topic.likes.remove(request.user)
+    else:
+        topic.likes.add(request.user)
+        liked = True
+
+    return JsonResponse({
+        'liked': liked,
+        'likes_count': topic.likes.count()
+    })
 
 
 @login_required

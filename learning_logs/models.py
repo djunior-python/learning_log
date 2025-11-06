@@ -8,6 +8,7 @@ class Topic(models.Model):
     date_added = models.DateTimeField(auto_now_add=True)
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     is_public = models.BooleanField(default=False)
+    likes = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='liked_topics', blank=True)
 
     def __str__(self):
         """Повернути рядкове представлення моделі."""

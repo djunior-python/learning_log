@@ -1,37 +1,90 @@
 {% extends 'learning_logs/base.html' %}
 
 {% block page_header %}
-    <h3>{{ topic }}</h3>
+<h3>{{ topic }}</h3>
 {% endblock page_header %}
 
 {% block content %}
-    {% if topic.owner == user %}
-        <p>
-            <a href="{% url 'learning_logs:new_entry' topic.id %}">Add new entry</a>
-        </p>
-    {% endif %}
-    {% if topic.owner != user%}
-        <p>
-            <a href="{% url 'learning_logs:create_complaint' topic.id %}" class="btn btn-warning btn-sm ml-3">Complain about this topic</a>
-        </p>
-    {% endif %}
+<div class="d-flex align-items-center justify-content-between mb-3">
+    <div>
+        {% if topic.owner == user %}
+            <a href="{% url 'learning_logs:new_entry' topic.id %}" class="btn btn-primary btn-sm">Add new entry</a>
+        {% endif %}
+    </div>
 
-    {% for entry in entries %}
-        <div class="card mb-3">
-            <h4 class="card-header">
-                {{ entry.date_added|date:'M d, Y H:i' }}
-                    <small><a href="{% url 'learning_logs:entry_detail' entry.id %}">read entry &raquo;</a></small>
-                {% if topic.owner == user %}
-                    <small><a href="{% url 'learning_logs:edit_entry' entry.id %}">edit entry &raquo;</a></small>
-                    <small><a href="{% url 'learning_logs:delete_entry' entry.id %}">delete entry &raquo;</a></small>
-                {% endif %}
-            </h4>
-            <div class="card-body">
-                {{ entry.text|linebreaks }}
-            </div>
-        </div>
-    {% empty %}
-        <p>There are no entries for this topic yet.</p>
-    {% endfor %}
+    <!-- Кнопка лайку -->
+    {% if topic.is_public and topic.owner != user %}
+        <button id="like-btn"
+                data-topic-id="{{ topic.id }}"
+                class="btn btn-outline-danger btn-sm">
+            ❤️ Like (<span id="like-count">{{ topic.likes.count }}</span>)
+        </button>
+    {% endif %}
+    <!-- Кнопка скарги -->
+    {% if user.is_authenticated and topic.owner != user %}
+        <a href="{% url 'learning_logs:create_complaint' topic.id %}" 
+           class="btn btn-outline-warning btn-sm">
+           🚩 Поскаржитись
+        </a>
+    {% endif %}
+</div>
 
+{% for entry in entries %}
+<div class="card mb-3">
+    <h4 class="card-header">
+        {{ entry.date_added|date:'M d, Y H:i' }}
+        <small><a href="{% url 'learning_logs:entry_detail' entry.id %}">read entry &raquo;</a></small>
+        {% if topic.owner == user %}
+            <small><a href="{% url 'learning_logs:edit_entry' entry.id %}">edit entry &raquo;</a></small>
+            <small><a href="{% url 'learning_logs:delete_entry' entry.id %}">delete entry &raquo;</a></small>
+        {% endif %}
+    </h4>
+    <div class="card-body">
+        {{ entry.text|linebreaks }}
+    </div>
+</div>
+{% empty %}
+<p>There are no entries for this topic yet.</p>
+{% endfor %}
+
+<!-- JS код -->
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const likeBtn = document.getElementById('like-btn');
+    if (!likeBtn) return;
+
+    likeBtn.addEventListener('click', () => {
+        const topicId = likeBtn.dataset.topicId;
+        fetch(`/like_topic/${topicId}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('like-count').innerText = data.likes_count;
+            likeBtn.classList.toggle('btn-danger', data.liked);
+            likeBtn.classList.toggle('btn-outline-danger', !data.liked);
+        });
+    });
+
+    // Отримує CSRF-токен із cookies
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let cookie of cookies) {
+                cookie = cookie.trim();
+                if (cookie.startsWith(name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+});
+</script>
 {% endblock content %}
