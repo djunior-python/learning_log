@@ -129,7 +129,7 @@ def new_topic(request):
             new_topic = form.save(commit=False)
             new_topic.owner = request.user
             new_topic.save()
-            return redirect('learning_logs:my_topics')
+            return redirect('learning_logs:topics')
 
     # Показати порожню або недійсну форму.
     context = {'form': form}
