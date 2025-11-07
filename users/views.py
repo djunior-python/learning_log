@@ -1,9 +1,10 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login
+from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 
 from .models import CustomUser
-from .forms import CustomUserCreationForm
+from .forms import CustomUserCreationForm, ProfileForm
 from .utils import send_activation_email
 
 
@@ -36,3 +37,20 @@ def activate_account(request, token):
     user.save()
     login(request, user)
     return render(request, "users/activation_success.html")
+
+@login_required
+def profile_view(request):
+    user = request.user
+    if request.method == 'POST':
+        form = ProfileForm(request.POST, instance=user)
+        if form.is_valid():
+            form.save()
+            return redirect('users:profile')
+    else:
+        form = ProfileForm(instance=user)
+
+    context = {
+        'user_data': user,
+        'form': form,
+    }
+    return render(request, 'users/profile.html', context)

@@ -27,6 +27,11 @@
                 <li class="nav-item">
                     <a class="nav-link" href="{% url 'learning_logs:about'%}">About me and my website</a>
                 </li>
+                {% if user.is_authenticated %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'users:profile'%}">Profile</a>
+                    </li>
+                {% endif %}
                 <li class="nav-item">
                     <a class="nav-link" href="{% url 'learning_logs:topics'%}">Topics</a>
                 </li>
