@@ -3,7 +3,11 @@
     <div class="card-body">
       <h5 class="card-title">{{ topic.text }}</h5>
       <p class="text-muted">
-        Owner: {{ topic.owner.user_name }} |
+        {% if topic.owner == user %}
+          Owner: You |
+        {% else %}
+          Owner: {{ topic.owner.user_name }} |
+        {% endif %}
         {{ topic.date_added|date:"d.m.Y" }} |
         ❤️ {{ topic.likes.count }}
       </p>
@@ -16,6 +20,9 @@
       {% endif %}
       {% if topic.owner == user and topic.is_public == True %}
         <a href="{% url 'learning_logs:publish_topic' topic.id %}" class="btn btn-outline-dark btn-sm">unpublish topic</a>
+      {% endif %}
+      {% if topic.owner != user %}
+        <a href="{% url 'learning_logs:create_complaint' topic.id %}" class="btn btn-outline-danger btn-sm">🚩 To complain</a>
       {% endif %}
     </div>
   </div>

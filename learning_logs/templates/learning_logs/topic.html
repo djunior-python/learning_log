@@ -24,7 +24,7 @@
     {% if user.is_authenticated and topic.owner != user %}
         <a href="{% url 'learning_logs:create_complaint' topic.id %}" 
            class="btn btn-outline-warning btn-sm">
-           🚩 Поскаржитись
+           🚩 To complain
         </a>
     {% endif %}
 </div>

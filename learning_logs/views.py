@@ -27,7 +27,7 @@ def check_blocked(view_func):
 def check_owner_or_public(request, topic):
     """Доступ власнику завжди, іншим лише якщо тема публічна (для перегляду)."""
     if topic.owner != request.user and not topic.is_public:
-        raise Http404
+        raise Http404("Topic not found.")
     
 
 def index(request):
@@ -53,9 +53,12 @@ def topics(request):
 @login_required
 def topic(request, topic_id):
     """Відобразити тему та прив'язані до неї дописи."""
-    topic = Topic.objects.get(id=topic_id)
-    # Пересвідчитись, що тема належить поточному користувачеві.
-    check_owner_or_public(request, topic)
+    try:
+        topic = Topic.objects.get(id=topic_id)
+        # Пересвідчитись, що тема належить поточному користувачеві.
+        check_owner_or_public(request, topic)
+    except Topic.DoesNotExist:
+        raise Http404("Topic not found.")
 
     entries = topic.entry_set.order_by('-date_added')
     context = {'topic': topic, 'entries': entries}
@@ -73,7 +76,7 @@ def publish_topic(request, topic_id):
     else:
         topic.is_public = True
     topic.save()
-    return redirect('learning_logs:topic', topic_id=topic.id)
+    return redirect('learning_logs:topics')
 
 
 @login_required
