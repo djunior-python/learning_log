@@ -1,0 +1,25 @@
+{% extends "learning_logs/base.html" %}
+{% load bootstrap4 %}
+
+{% block page_header %}
+<h2>Your profile</h2>
+{% endblock page_header %}
+
+{% block content %}
+<div class="card p-3 shadow-sm">
+    <p><strong>User name:</strong> {{ user_data.user_name }}</p>
+    <p><strong>Email:</strong> {{ user_data.email }}</p>
+    <p><strong>Date of joining:</strong> {{ user_data.date_joined|date:"d.m.Y" }}</p>
+
+    <hr>
+
+    <h4>Edit profile</h4>
+    <form method="post" class="form">
+        {% csrf_token %}
+        {% bootstrap_form form %}
+        {% buttons %}
+            <button type="submit" class="btn btn-primary">Save changes</button>
+        {% endbuttons %}
+    </form>
+</div>
+{% endblock content %}

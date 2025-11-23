@@ -1,0 +1,10 @@
+{% extends "learning_logs/base.html" %}
+
+{% block page_header %}
+    <h2>Account activated 🎉</h2>
+{% endblock page_header %}
+
+{% block content %}
+    <p>Your account has been successfully activated! You can now 
+    <a href="{% url 'learning_logs:index' %}">go to the main page</a>.</p>
+{% endblock content %}

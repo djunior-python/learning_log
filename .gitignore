@@ -1,0 +1,32 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.sqlite3
+*.log
+
+# Virtual environment
+ll_env/
+venv/
+.env
+
+# Django
+db.sqlite3
+media/
+staticfiles/
+debug.log
+
+# IDE & Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# System
+.DS_Store
+Thumbs.db
+
+# Local configs
+django.log
+security.log

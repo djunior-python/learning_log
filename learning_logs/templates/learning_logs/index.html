@@ -1,0 +1,21 @@
+{% extends "learning_logs/base.html" %}
+
+{% block page_header %}
+<div class="jumbotron" xmlns="http://www.w3.org/1999/html">
+        <h1 class="display-3">Track your learning.</h1>
+
+        <p class="lead">Make your own learning Log, and keep a list of the
+            topics you're learning about. Whenever you learn something new
+            about a topic, make an entry summarizing what you've learned.</p>
+
+        {% if not user.is_authenticated %}
+            <a class="btn btn-lg btn-primary" href="{% url 'users:register' %}" role="button">Register &raquo;</a>
+            <a class="btn btn-lg btn-primary" href="{% url 'users:login' %}" role="button">Log in &raquo;</a>
+        {% else %}
+            <form method="post" action="{% url 'users:logout' %}">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-lg btn-primary">Log out &raquo;</button>
+            </form>
+        {% endif %}
+    </div>
+{% endblock page_header %}

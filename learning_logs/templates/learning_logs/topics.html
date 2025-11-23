@@ -1,0 +1,62 @@
+{% extends "learning_logs/base.html" %}
+
+{% block page_header %}
+    <h1>Topics</h1>
+{% endblock page_header %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Панель фільтрів -->
+    <div class="card p-3 shadow-sm mb-4">
+        <div class="row">
+            <div class="col-md-4">
+                <label for="sort-by" class="form-label">Sort by:</label>
+                <select id="sort-by" class="form-select">
+                    <option value="-date_added">The newest</option>+
+                    <option value="date_added">The oldest</option>
+                    <option value="-likes_count">More likes</option>
+                    <option value="likes_count">less likes</option>
+                </select>
+            </div>
+
+            <div class="col-md-4">
+                <label for="filter-type" class="form-label">Тип тем:</label>
+                <select id="filter-type" class="form-select">
+                    <option value="mine">My</option>
+                    <option value="public">Public</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <!-- Контейнер для списку тем -->
+    <div id="topics-container">
+        {% include "learning_logs/topics_list.html" with topics=topics %}
+    </div>
+
+    <h3 class="mt-3"><a href="{% url 'learning_logs:new_topic' %}">Add a topic</a></h3>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const sortSelect = document.getElementById('sort-by');
+    const typeSelect = document.getElementById('filter-type');
+    const container = document.getElementById('topics-container');
+
+    function fetchFilteredTopics() {
+        const sort = sortSelect.value;
+        const type = typeSelect.value;
+
+        fetch(`/filter_topics/?sort=${sort}&type=${type}`, {
+            headers: { "X-Requested-With": "XMLHttpRequest" }
+        })
+        .then(res => res.text())
+        .then(html => container.innerHTML = html)
+        .catch(err => console.error('Filter error:', err));
+    }
+
+    sortSelect.addEventListener('change', fetchFilteredTopics);
+    typeSelect.addEventListener('change', fetchFilteredTopics);
+});
+</script>
+{% endblock content %}
