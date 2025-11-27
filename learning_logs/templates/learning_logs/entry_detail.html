@@ -13,7 +13,7 @@
         <h4 class="card-header">
             {{ entry.date_added|date:'M d, Y, H:i' }}
             {% if topic.owner == user %}
-                <small><a href="{% url 'learning_logs:edit_entry' entry.id %}">edit entry &raquo;</a></small>
+                <small><a href="{% url 'learning_logs:edit_entry' entry.id %}"> edit entry &raquo;</a></small>
                 <small><a href="{% url 'learning_logs:delete_entry' entry.id %}"> delete entry &raquo;</a></small>
             {% endif %}
         </h4>
@@ -22,17 +22,23 @@
         </div>
     </div>
 
-    {% if entry.image %}
+    {% if images %}
         <div class="mb-3">
-            <h5>Attached image:</h5>
-            <img src="{{ entry.image.url }}" alt="Image" style="max-width: 400px;" class="img-thumbnail">
+            <h5>Attached images:</h5>
+            {% for img in images.all %}
+                <img src="{{ img.image.url }}" alt="Image" style="max-width: 400px;" class="img-thumbnail">
+            {% endfor %}
         </div>
     {% endif %}
 
-    {% if entry.file %}
+    {% if files %}
         <div>
-            <h5>Attached file:</h5>
-            <a href="{{ entry.file.url }}" download>{{ entry.file.name|cut:"files/" }}</a>
+            <h5>Attached files:</h5>
+            {% for f in files.all %}
+                <p>
+                    <a href="{{ f.file.url }}" download>{{ f.file.name|cut:"files/" }}</a>
+                </p>
+            {% endfor %}
         </div>
     {% endif %}
 {% endblock content %}

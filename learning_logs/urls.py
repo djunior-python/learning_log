@@ -26,6 +26,10 @@ urlpatterns = [
     path('new_entry/<int:topic_id>/', views.new_entry, name='new_entry'),
     # Сторінка для редагування допису.
     path('edit_entry/<int:entry_id>', views.edit_entry, name='edit_entry'),
+    # Видалення файлу.
+    path('delete_file/<int:file_id>', views.delete_file, name='delete_file'),
+    # Видалення зображення.
+    path('delete_image/<int:image_id>', views.delete_image, name='delete_image'),
     # Сторінка в разі видалення теми.
     path('delete_topic/<int:topic_id>', views.delete_topic, name='delete_topic'),
     # Сторінка в разі видалення допису.

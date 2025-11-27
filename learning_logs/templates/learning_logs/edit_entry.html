@@ -6,15 +6,48 @@
 {% endblock page_header %}
 
 {% block content %}
-    <h3><a href="{% url 'learning_logs:topic' topic.id %}">{{ topic }}</a></h3>
 
+    <h3><a href="{% url 'learning_logs:topic' topic.id %}">{{ topic }}</a></h3>
     {% if topic.owner == user %}
         <form action="{% url 'learning_logs:edit_entry' entry.id %}"
-            method='post'
-            enctype="multipart/form-data"
-            class="form">
+            method="post"
+            enctype="multipart/form-data">
             {% csrf_token %}
-            {% bootstrap_form form %}
+
+            <!-- Основні дані запису -->
+            {% bootstrap_form entry_form %}
+
+            <h4>Images:</h4>
+
+            <!-- Вивід існуючих зображень -->
+            {% for img in entry.images.all %}
+                <div style="margin-bottom: 10px;">
+                    <img src="{{ img.image.url }}" width="150">
+                    <a href="{% url 'learning_logs:delete_image' img.id %}"
+                        class="btn btn-danger btn-sm">Delete</a>
+                </div>
+            {% empty %}
+                <p>No images yet.</p>
+            {% endfor %}
+
+            <!-- Додавання нових -->
+            {{ image_form }}
+
+            <hr>
+                <h4>Files:</h4>
+
+            {% for f in entry.files.all %}
+                <p>
+                    <a href="{{ f.file.url }}">{{ f.file.name }}</a>
+                    <a href="{% url 'learning_logs:delete_file' f.id %}"
+                        class="btn btn-danger btn-sm">Delete</a>
+                </p>
+            {% empty %}
+                <p>No files yet.</p>
+            {% endfor %}
+
+            {{ file_form }}
+
             {% buttons %}
                 <button name="submit" class="btn btn-primary">Save changes</button>
             {% endbuttons %}

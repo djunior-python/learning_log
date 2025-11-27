@@ -20,8 +20,6 @@ class Entry(models.Model):
     topic = models.ForeignKey(Topic, on_delete=models.CASCADE)
     text = models.TextField()
     date_added = models.DateTimeField(auto_now_add=True)
-    image = models.ImageField(storage=MediaCloudinaryStorage(), upload_to='entry_images/', blank=True, null=True)
-    file = models.FileField(storage=RawMediaCloudinaryStorage(), upload_to='entry_files/', blank=True, null=True)
 
     class Meta:
         verbose_name_plural = 'entries'
@@ -32,6 +30,25 @@ class Entry(models.Model):
             return f"{self.text[:50]}..."
         else:
             return f"{self.text}"
+        
+class Files(models.Model):
+    """Файли, прикріплені до запису."""
+    entry = models.ForeignKey(Entry, on_delete=models.CASCADE, related_name='files')
+    file = models.FileField(storage=RawMediaCloudinaryStorage(), upload_to='entry_files/', blank=True, null=True)
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+    
+    def __str__(self):
+        """Повертає представлення моделі у string."""
+        return f"File for Entry ID {self.entry.id} uploaded at {self.uploaded_at}"
+    
+class Images(models.Model):
+    """Зображення, прикріпленні до запису."""
+    entry = models.ForeignKey(Entry, on_delete=models.CASCADE, related_name='images')
+    image = models.ImageField(storage=MediaCloudinaryStorage(), upload_to='entry_images/', blank=True, null=True)
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+    
+    def __str__(self):
+        return f"Image for Entry ID {self.entry.id} uploaded at {self.uploaded_at}"
         
 class Complaint(models.Model):
     owner = models.ForeignKey(

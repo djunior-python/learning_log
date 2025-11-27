@@ -7,8 +7,8 @@ from django.contrib import messages
 
 from cloudinary.uploader import destroy
 
-from .models import Topic, Entry
-from .forms import TopicForm, EntryForm, ComplaintForm
+from .models import Topic, Entry, Files, Images
+from .forms import TopicForm, EntryForm, FileForm, ImageForm, ComplaintForm
 
 # Create your views here.
 def check_owner(request, topic):
@@ -160,10 +160,15 @@ def entry_detail(request, entry_id):
     topic = entry.topic
 
     check_owner_or_public(request, topic)
+    
+    images = Images.objects.filter(entry=entry)
+    files = Files.objects.filter(entry=entry)
 
     context = {
         'entry': entry,
         'topic': topic,
+        'images': images,
+        'files': files,
     }
     return render(request, 'learning_logs/entry_detail.html', context)
 
@@ -171,69 +176,110 @@ def entry_detail(request, entry_id):
 @login_required
 def new_entry(request, topic_id):
     """Додати нову тему, яка прив'язана до обраної теми."""
-    topic = Topic.objects.get(id=topic_id)
+    topic = get_object_or_404(Topic, id=topic_id)
     check_owner(request, topic)
 
     if request.method != 'POST':
         # Жодних даних не надіслано; створити порожню форму.
-        form = EntryForm()
+        form_entry = EntryForm()
+        form_file = FileForm()
+        form_image = ImageForm()
     else:
         # Отримати дані у POST-запиті; обробити дані.
-        form = EntryForm(request.POST, request.FILES)
-        if form.is_valid():
-            new_entry = form.save(commit=False)
+        form_entry = EntryForm(request.POST, request.FILES)
+        form_file = FileForm(request.POST, request.FILES)
+        form_image = ImageForm(request.POST, request.FILES)
+        if form_entry.is_valid():
+            # 1) Створюємо сам запис
+            new_entry = form_entry.save(commit=False)
             new_entry.topic = topic
             new_entry.save()
+
+            # 2) Зберігаємо ФАЙЛИ
+            files = request.FILES.getlist('file')
+            for f in files:
+                Files.objects.create(entry=new_entry, file=f)
+
+            # 3) Зберігаємо ЗОБРАЖЕННЯ
+            images = request.FILES.getlist('image')
+            for img in images:
+                Images.objects.create(entry=new_entry, image=img)
+
             return redirect('learning_logs:topic', topic_id=topic_id)
 
     # Показати порожню або недійсну форму.
-    context = {'topic': topic, 'form': form}
+    context = {'topic': topic,
+               'entry_form': form_entry,
+               'file_form': form_file,
+               'image_form': form_image,
+               }
+    
     return render(request, 'learning_logs/new_entry.html', context)
 
 
 @login_required
 def edit_entry(request, entry_id):
     """Редагувати існуючий допис."""
-    entry = Entry.objects.get(id=entry_id)
+    entry = get_object_or_404(Entry, id=entry_id)
     topic = entry.topic
     check_owner(request, topic)
 
     if request.method != 'POST':
-        # Початковий запит; попередньо заповніть форму поточними даними.
-        form = EntryForm(instance=entry)
+        entry_form = EntryForm(instance=entry)
+        file_form = FileForm()
+        image_form = ImageForm()
     else:
-        # Дані POST надіслано; обробити дані.
-        form = EntryForm(request.POST, request.FILES, instance=entry)
-        if form.is_valid():
-            # 1) ЛОГІКА ДЛЯ ФАЙЛУ
-            if request.POST.get("file-clear"):
-                if entry.file:
-                    public_id = get_public_id(entry.file.name)
-                    destroy(public_id=public_id, resource_type="raw")
-                form.instance.file = None
-            else:
-                # НЕ очищували - якщо немає нового файлу - залишаємо старий
-                if not request.FILES.get("file"):
-                    form.instance.file = entry.file
-                else:
-                    # Є новий файл → видаляємо старий
-                    if entry.file:
-                        public_id = get_public_id(entry.file.name)
-                        destroy(public_id=public_id, resource_type="raw")
-            # 2) ЛОГІКА ДЛЯ ЗОБРАЖЕННЯ
-            if not request.FILES.get("image"):
-                # Не вибрали нове зображення — залишаємо старе
-                form.instance.image = entry.image
-            else:
-                # Є нове зображення → видаляємо старе
-                if entry.image:
-                    public_id = get_public_id(entry.image.name)
-                    destroy(public_id=public_id, resource_type="image")
-            form.save()
+        entry_form = EntryForm(request.POST, instance=entry)
+        file_form = FileForm(request.POST, request.FILES)
+        image_form = ImageForm(request.POST, request.FILES)
+
+        if entry_form.is_valid():
+            entry_form.save()
+
+            # Додати нові файли
+            for f in request.FILES.getlist("file"):
+                Files.objects.create(entry=entry, file=f)
+
+            # Додати нові зображення
+            for img in request.FILES.getlist("image"):
+                Images.objects.create(entry=entry, image=img)
+
             return redirect('learning_logs:topic', topic_id=topic.id)
 
-    context = {'entry': entry, 'topic': topic, 'form': form}
+    context = {
+        'entry': entry,
+        'topic': topic,
+        'entry_form': entry_form,
+        'file_form': file_form,
+        'image_form': image_form,
+        'files': entry.files.all(),
+        'images': entry.images.all(),
+    }
     return render(request, 'learning_logs/edit_entry.html', context)
+
+
+@login_required
+def delete_file(request, file_id):
+    file_obj = get_object_or_404(Files, id=file_id)
+    topic = file_obj.entry.topic
+    check_owner(request, topic)
+
+    file_obj.file.delete()  # ❗ видаляє з Cloudinary
+    file_obj.delete()       # ❗ видаляє з БД
+
+    return redirect('learning_logs:edit_entry', entry_id=file_obj.entry.id)
+
+
+@login_required
+def delete_image(request, image_id):
+    image_obj = get_object_or_404(Images, id=image_id)
+    topic = image_obj.entry.topic
+    check_owner(request, topic)
+
+    image_obj.image.delete()  # ❗ видаляє з Cloudinary
+    image_obj.delete()        # ❗ видаляє з DB
+
+    return redirect('learning_logs:edit_entry', entry_id=image_obj.entry.id)
 
 
 @login_required

@@ -14,7 +14,9 @@
             enctype="multipart/form-data" 
             class="form">
             {% csrf_token %}
-            {% bootstrap_form form %}
+            {% bootstrap_form entry_form %}
+            {{ image_form }}
+            {{ file_form}}
             {% buttons %}
                 <button name="submit" class="btn btn-primary">Add entry</button>
             {% endbuttons %}
