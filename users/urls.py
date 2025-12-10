@@ -13,5 +13,7 @@ urlpatterns = [
     # Сторінка реєстрації.
     path('register/', views.register, name='register'),
     path("activate/<str:token>/", views.activate_account, name="activate"),
-    path('profile/', views.profile_view, name='profile')
+    path('profile/', views.profile_view, name='profile'),
+    path('user_profile/<int:user_id>/', views.user_profile, name='user_profile'),
+    path("follow/<int:user_id>/", views.toggle_follow, name="toggle_follow"),
 ]

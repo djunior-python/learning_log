@@ -36,6 +36,8 @@ urlpatterns = [
     path('delete_entry/<int:entry_id>', views.delete_entry, name='delete_entry'),
     # Сторінка для подачі скарги.
     path('complain/<int:topic_id>/', views.create_complaint, name='create_complaint'),
+    # Сторінка зі списком силок на профілі користувачів, на яких підписаний поточний користувач.
+    path('following/', views.following, name='following'),
     # Сторінка правил спільноти.
     path('comunity/', views.community, name='community'),
     # Сторінка "Про сайт".

@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from .models import CustomUser
+from .models import CustomUser, UserFollow
 
 @admin.register(CustomUser)
 class CustomUserAdmin(UserAdmin):
@@ -11,9 +11,9 @@ class CustomUserAdmin(UserAdmin):
 
     fieldsets = (
         (None, {"fields": ("email", "password")}),
-        ("Особиста інформація", {"fields": ("user_name",)}),
-        ("Права доступу", {"fields": ("is_active", "is_staff", "is_superuser", "groups", "user_permissions")}),
-        ("Модерація", {"fields": ("blocked",)}),
+        ("Personal information", {"fields": ("user_name", "subscriptions")}),
+        ("Access rights", {"fields": ("is_active", "is_staff", "is_superuser", "groups", "user_permissions")}),
+        ("Moderation", {"fields": ("blocked",)}),
     )
 
     add_fieldsets = (
@@ -22,3 +22,5 @@ class CustomUserAdmin(UserAdmin):
             "fields": ("email", "user_name", "password1", "password2", "is_active", "is_staff", "is_superuser", "blocked"),
         }),
     )
+    
+admin.site.register(UserFollow)

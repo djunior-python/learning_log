@@ -1,0 +1,89 @@
+{% extends "learning_logs/base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="card p-3 shadow-sm">
+
+    <div class="d-flex justify-content-between align-items-center">
+        <h3>{{ user_data.user_name }}</h3>
+
+        {% if request.user.id != user_data.id %}
+            <button id="follow-btn"
+                    class="btn btn-sm {% if is_following %}btn-danger{% else %}btn-primary{% endif %}"
+                    data-user-id="{{ user_data.id }}">
+                {% if is_following %}Unfollow{% else %}Follow{% endif %}
+            </button>
+        {% endif %}
+    </div>
+
+    <p><strong>Email:</strong> {{ user_data.email }}</p>
+    <p><strong>Joined:</strong> {{ user_data.date_joined|date:"d.m.Y" }}</p>
+
+    <hr>
+
+    <p><strong>Followers:</strong> <span id="followers-count">{{ followers_count }}</span></p>
+    <p><strong>Following:</strong> <span id="following-count">{{ following_count }}</span></p>
+
+</div>
+
+{% for topic in topics %}
+  <div class="card mb-3 shadow-sm">
+    <div class="card-body">
+      <h5 class="card-title">{{ topic.text }}</h5>
+      <a href="{% url 'learning_logs:topic' topic.id %}" class="btn btn-outline-primary btn-sm">look through</a>
+      {% if topic.owner == request_user %}
+        <a href="{% url 'learning_logs:delete_topic' topic.id %}" class="btn btn-outline-warning btn-sm">delete</a>
+      {% endif %}
+      {% if topic.owner == request_user and topic.is_public != True %}
+        <a href="{% url 'learning_logs:publish_topic' topic.id %}" class="btn btn-outline-dark btn-sm">publish topic</a>
+      {% endif %}
+      {% if topic.owner == request_user and topic.is_public == True %}
+        <a href="{% url 'learning_logs:publish_topic' topic.id %}" class="btn btn-outline-dark btn-sm">unpublish topic</a>
+      {% endif %}
+      {% if topic.owner != request_user %}
+        <a href="{% url 'learning_logs:create_complaint' topic.id %}" class="btn btn-outline-danger btn-sm">🚩 To complain</a>
+      {% endif %}
+    </div>
+  </div>
+{% empty %}
+  <p class="text-center text-muted">No topic found.</p>
+{% endfor %}
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const btn = document.getElementById("follow-btn");
+    if (!btn) return;
+
+    btn.addEventListener("click", function() {
+        const userId = btn.dataset.userId;
+
+        fetch(`/users/follow/${userId}/`, {
+            method: "POST",
+            headers: {
+                "X-CSRFToken": "{{ csrf_token }}",
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) return;
+
+            // Оновлюємо текст кнопки
+            if (data.is_following) {
+                btn.textContent = "Unfollow";
+                btn.classList.remove("btn-primary");
+                btn.classList.add("btn-danger");
+            } else {
+                btn.textContent = "Follow";
+                btn.classList.remove("btn-danger");
+                btn.classList.add("btn-primary");
+            }
+
+            // Оновлюємо лічильники
+            document.getElementById("followers-count").textContent = data.followers_count;
+            document.getElementById("following-count").textContent = data.following_count;
+        })
+    });
+});
+</script>
+
+{% endblock %}

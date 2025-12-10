@@ -1,0 +1,20 @@
+{% extends "learning_logs/base.html" %}
+
+{% block page_header %}
+    <h1>Following users</h1>
+{% endblock page_header %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card p-3 shadow-sm mb-4">
+        <h5>Users you are following:</h5>
+        {% for followed_user in followed_users %}
+            <div class="mb-2">
+                <a href="{% url 'users:user_profile' followed_user.id %}">{{ followed_user.user_name }}</a>
+            </div>
+        {% empty %}
+            <p class="text-center text-muted">You are not following any users yet.</p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock content %}

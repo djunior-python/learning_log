@@ -6,7 +6,7 @@
         {% if topic.owner == user %}
           Owner: You |
         {% else %}
-          Owner: {{ topic.owner.user_name }} |
+          Owner: <a href="{% url 'users:user_profile' topic.owner.id %}">{{ topic.owner.user_name }}</a> |
         {% endif %}
         {{ topic.date_added|date:"d.m.Y" }} |
         ❤️ {{ topic.likes.count }}
