@@ -11,7 +11,7 @@ class CustomUserAdmin(UserAdmin):
 
     fieldsets = (
         (None, {"fields": ("email", "password")}),
-        ("Personal information", {"fields": ("user_name", "subscriptions")}),
+        ("Personal information", {"fields": ("user_name",)}),
         ("Access rights", {"fields": ("is_active", "is_staff", "is_superuser", "groups", "user_permissions")}),
         ("Moderation", {"fields": ("blocked",)}),
     )
