@@ -48,6 +48,7 @@ def index(request):
     """Головна сторінка <<Журналу спостережень>>."""
     return render(request, 'learning_logs/index.html')
 
+@login_required
 def following(request):
     """Дає силки на сторінки користувачів, на яких підписаний поточний користувач."""
     user = request.user
@@ -55,7 +56,6 @@ def following(request):
     context = {'followed_users': followed_users}
     return render(request, 'learning_logs/following.html', context)
     
-
 
 @login_required
 def my_topics(request):
