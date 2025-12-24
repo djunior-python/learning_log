@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Topic, Entry, Complaint
+from .models import Topic, Entry, Comment, ComplaintTopic, ComplaintComment
 from django.urls import reverse
 from django.utils.html import format_html
 
@@ -22,7 +22,7 @@ class TopicAdmin(admin.ModelAdmin):
     
     def entry_count(self, obj):
         return obj.entry_set.count()
-    entry_count.short_description = 'Кількість дописів'
+    entry_count.short_description = 'Number of Entries'
     
     
 @admin.register(Entry)
@@ -41,11 +41,22 @@ class EntryAdmin(admin.ModelAdmin):
     
     def topic_owner(self, obj):
         return obj.topic.owner.username
-    topic_owner.short_description = 'Власник теми'
+    topic_owner.short_description = 'Topic Owner'
+    
+    
+@admin.register(Comment)
+class CommentAdmin(admin.ModelAdmin):
+    list_display = ('short_text', 'entry', 'owner', 'date_added')
+    list_filter = ('date_added',)
+    search_fields = ('text', 'owner__user_name', 'entry__text') # пошук за текстом коментаря, ім'ям власника та текстом запису
+    
+    def short_text(self, obj):
+        return (obj.text[:30] + '...') if len(obj.text) > 30 else obj.text
+    short_text.short_description = 'Comment Text'
 
 
-@admin.register(Complaint)
-class ComplaintAdmin(admin.ModelAdmin):
+@admin.register(ComplaintTopic)
+class ComplaintTopicAdmin(admin.ModelAdmin):
     list_display = ("id", "owner", "offender", "topic", "status", "created_at")
     list_filter = ("status", "created_at", "offender")
     search_fields = ("text", "owner__user_name", "offender__user_name", "topic__title")
@@ -59,5 +70,24 @@ class ComplaintAdmin(admin.ModelAdmin):
     
     def topic_link(self, obj):
         url = reverse("learning_logs:topic", args=[obj.topic.id])
-        return format_html('<a href="{}">{}</a>', url, obj.topic.title)
-    topic_link.short_description = "Тема"
+        return format_html('<a href="{}">{}</a>', url, obj.topic.text)
+    topic_link.short_description = "Topic"
+    
+
+@admin.register(ComplaintComment)
+class ComplaintCommentAdmin(admin.ModelAdmin):
+    list_display = ("id", "owner", "offender", "comment", "status", "created_at")
+    list_filter = ("status", "created_at", "offender")
+    search_fields = ("text", "owner__user_name", "offender__user_name", "comment__text")
+    ordering = ("-created_at",)
+    list_editable = ("status",)  
+    date_hierarchy = "created_at"
+    
+    # Поля, які відображаються при відкритті скарги
+    readonly_fields = ("owner", "offender", "comment", "text", "created_at")
+    fields = ("owner", "offender", "comment", "text", "status", "created_at")
+    
+    def comment_link(self, obj):
+        url = reverse("learning_logs:entry_detail", args=[obj.comment.entry.id])
+        return format_html('<a href="{}">Comment ID {}</a>', url, obj.comment.id)
+    comment_link.short_description = "Comment"

@@ -41,4 +41,31 @@
             {% endfor %}
         </div>
     {% endif %}
+    <hr>
+    <div>
+        <h4>Comments:</h4>
+            <a href="{% url 'learning_logs:add_comment' entry.id %}" class="btn btn-primary mb-3">Add Comment</a>
+            {% if comments %}
+                {% for comment in comments %}
+                    <div class="card mb-2">
+                        <div class="card-body">
+                            <p class="text-muted">
+                                Posted on: {{ comment.date_added|date:'M d, Y, H:i' }} |
+                                {% if comment.owner == user %}
+                                     Owner: You |
+                                    <a href="{% url 'learning_logs:delete_comment' comment.id %}" class="btn btn-danger btn-sm">Delete</a>
+                                    <a href="{% url 'learning_logs:edit_comment' comment.id %}" class="btn btn-secondary btn-sm">Edit</a>
+                                {% else %}
+                                     Owner: <a href="{% url 'users:user_profile' comment.owner.id %}">{{ comment.owner.user_name }}</a> |
+                                    <a href="{% url 'learning_logs:create_complaint_comment' comment.id %}" class="btn btn-warning btn-sm">🚩 To complain</a>
+                                {% endif %}
+                            </p>
+                            <p>{{ comment.text|linebreaks }}</p>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p>No comments yet.</p>
+            {% endif %}
+    </div>
 {% endblock content %}

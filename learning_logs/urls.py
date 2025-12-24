@@ -34,12 +34,20 @@ urlpatterns = [
     path('delete_topic/<int:topic_id>', views.delete_topic, name='delete_topic'),
     # Сторінка в разі видалення допису.
     path('delete_entry/<int:entry_id>', views.delete_entry, name='delete_entry'),
-    # Сторінка для подачі скарги.
-    path('complain/<int:topic_id>/', views.create_complaint, name='create_complaint'),
+    # Сторінка для подачі скарги на тему.
+    path('complain_topic/<int:topic_id>/', views.create_complaint_topic, name='create_complaint_topic'),
+    # Сторінка для подачі скарги на коментар.
+    path('complain_comment/<int:comment_id>/', views.create_complaint_comment, name='create_complaint_comment'),
     # Сторінка зі списком силок на профілі користувачів, на яких підписаний поточний користувач.
     path('following/', views.following, name='following'),
+    # Сторінка для додавання коментаря до допису.
+    path('add_comment/<int:entry_id>/', views.add_comment, name='add_comment'),
+    # Сторінка для редагування коментаря.
+    path('edit_comment/<int:comment_id>/', views.edit_comment, name='edit_comment'),
+    # Сторінка для видалення коментаря.
+    path('delete_comment/<int:comment_id>/', views.delete_comment, name='delete_comment'),
     # Сторінка правил спільноти.
-    path('comunity/', views.community, name='community'),
+    path('community/', views.community, name='community'),
     # Сторінка "Про сайт".
     path('about/', views.about, name='about'),
 ]

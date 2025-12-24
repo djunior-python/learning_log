@@ -7,13 +7,13 @@ from django.contrib import messages
 
 from cloudinary.uploader import destroy
 
-from .models import Topic, Entry, Files, Images
-from .forms import TopicForm, EntryForm, FileForm, ImageForm, ComplaintForm
+from .models import Topic, Entry, Comment, Files, Images
+from .forms import TopicForm, EntryForm, CommentForm, FileForm, ImageForm, ComplaintTopicForm, ComplaintCommentForm
 
 # Create your views here.
-def check_owner(request, topic):
+def check_owner(request, obj):
     """Доступ тільки власнику (для редагування, видалення, додавання записів)."""
-    if topic.owner != request.user:
+    if obj.owner != request.user:
         raise Http404
 
 
@@ -166,6 +166,7 @@ def entry_detail(request, entry_id):
     """Відображає повний допис з прикріпленими файлами."""
     entry = get_object_or_404(Entry, id=entry_id)
     topic = entry.topic
+    comments = Comment.objects.filter(entry=entry)
 
     check_owner_or_public(request, topic)
     
@@ -177,6 +178,7 @@ def entry_detail(request, entry_id):
         'topic': topic,
         'images': images,
         'files': files,
+        'comments': comments,
     }
     return render(request, 'learning_logs/entry_detail.html', context)
 
@@ -197,7 +199,7 @@ def new_entry(request, topic_id):
         form_entry = EntryForm(request.POST, request.FILES)
         form_file = FileForm(request.POST, request.FILES)
         form_image = ImageForm(request.POST, request.FILES)
-        if form_entry.is_valid():
+        if form_entry.is_valid() and form_file.is_valid() and form_image.is_valid():
             # 1) Створюємо сам запис
             new_entry = form_entry.save(commit=False)
             new_entry.topic = topic
@@ -241,7 +243,7 @@ def edit_entry(request, entry_id):
         file_form = FileForm(request.POST, request.FILES)
         image_form = ImageForm(request.POST, request.FILES)
 
-        if entry_form.is_valid():
+        if entry_form.is_valid() and file_form.is_valid() and image_form.is_valid():
             entry_form.save()
 
             # Додати нові файли
@@ -320,21 +322,101 @@ def delete_entry(request, entry_id):
 
 
 @login_required
+def add_comment(request, entry_id):
+    entry = get_object_or_404(Entry, id=entry_id)
+    topic = entry.topic
+    check_owner_or_public(request, topic)
+    
+    if request.method != 'POST':
+        form = CommentForm()
+    else:
+        form = CommentForm(request.POST)
+        if form.is_valid():
+            new_comment = form.save(commit=False)
+            new_comment.entry = entry
+            new_comment.owner = request.user
+            new_comment.save()
+            
+            return redirect('learning_logs:entry_detail', entry_id=entry.id)
+    context = {'form': form, 'entry': entry}
+    return render(request, 'learning_logs/add_comment.html', context)
+
+
+@login_required
+def edit_comment(request, comment_id):
+    comment = get_object_or_404(Comment, id=comment_id)
+    topic = comment.entry.topic
+    check_owner(request, topic)
+    
+    if comment.owner != request.user:
+        messages.error(request, "You cannot edit this comment.")
+        return redirect('learning_logs:entry_detail', entry_id = comment.entry.id)
+    
+    if request.method != 'POST':
+        form = CommentForm(instance=comment)
+    else:
+        form = CommentForm(request.POST, instance=comment)
+        if form.is_valid():
+            form.save()
+            return redirect('learning_logs:entry_detail', entry_id = comment.entry.id)
+    
+    context = {'form': form, 'comment': comment}
+    return render(request, 'learning_logs/edit_comment.html', context)
+
+
+@login_required
+def delete_comment(request, comment_id):
+    comment = get_object_or_404(Comment, id=comment_id)
+    topic = comment.entry.topic
+    check_owner(request, topic)
+    
+    if comment.owner != request.user:
+        messages.error(request, "You cannot delete this comment.")
+        return redirect('learning_logs:entry_detail', entry_id = comment.entry.id)
+    
+    if request.method == 'POST':
+        entry_id = comment.entry.id
+        comment.delete()
+        return redirect('learning_logs:entry_detail', entry_id=entry_id)
+    
+    context = {'comment': comment}
+    return render(request, 'learning_logs/confirm_delete_comment.html', context)
+
+
+@login_required
 @check_blocked
-def create_complaint(request, topic_id):
+def create_complaint_topic(request, topic_id):
     topic = get_object_or_404(Topic, id=topic_id)
     offender = topic.owner  # вважаємо, що власник теми = порушник
 
     if request.method == "POST":
-        form = ComplaintForm(request.POST, owner=request.user, topic=topic, offender=offender)
+        form = ComplaintTopicForm(request.POST, owner=request.user, topic=topic, offender=offender)
         if form.is_valid():
             form.save()
-            messages.success(request, "Скаргу надіслано модераторам.")
+            messages.success(request, "Your complaint has been submitted.")
             return redirect("learning_logs:topic", topic_id=topic.id)
     else:
-        form = ComplaintForm(owner=request.user, topic=topic, offender=offender)
+        form = ComplaintTopicForm(owner=request.user, topic=topic, offender=offender)
 
-    return render(request, "learning_logs/create_complaint.html", {"form": form, "topic": topic})
+    return render(request, "learning_logs/create_complaint.html", {"form": form, "data": topic})
+
+
+@login_required
+@check_blocked
+def create_complaint_comment(request, comment_id):
+    comment = get_object_or_404(Comment, id=comment_id)
+    offender = comment.owner  # вважаємо, що власник коментаря = порушник
+
+    if request.method == "POST":
+        form = ComplaintCommentForm(request.POST, owner=request.user, comment=comment, offender=offender)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Your complaint has been submitted.")
+            return redirect("learning_logs:entry_detail", entry_id=comment.entry.id)
+    else:
+        form = ComplaintCommentForm(owner=request.user, comment=comment, offender=offender)
+
+    return render(request, "learning_logs/create_complaint.html", {"form": form, "data": comment})
 
 
 def community(request):

@@ -22,7 +22,7 @@
     {% endif %}
     <!-- Кнопка скарги -->
     {% if user.is_authenticated and topic.owner != user %}
-        <a href="{% url 'learning_logs:create_complaint' topic.id %}" 
+        <a href="{% url 'learning_logs:create_complaint_topic' topic.id %}" 
            class="btn btn-outline-warning btn-sm">
            🚩 To complain
         </a>
