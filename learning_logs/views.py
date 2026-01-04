@@ -321,6 +321,7 @@ def delete_entry(request, entry_id):
     return render(request, 'learning_logs/confirm_delete_entry.html', context)
 
 
+@check_blocked
 @login_required
 def add_comment(request, entry_id):
     entry = get_object_or_404(Entry, id=entry_id)
@@ -342,6 +343,7 @@ def add_comment(request, entry_id):
     return render(request, 'learning_logs/add_comment.html', context)
 
 
+@check_blocked
 @login_required
 def edit_comment(request, comment_id):
     comment = get_object_or_404(Comment, id=comment_id)
@@ -364,6 +366,7 @@ def edit_comment(request, comment_id):
     return render(request, 'learning_logs/edit_comment.html', context)
 
 
+@check_blocked
 @login_required
 def delete_comment(request, comment_id):
     comment = get_object_or_404(Comment, id=comment_id)
