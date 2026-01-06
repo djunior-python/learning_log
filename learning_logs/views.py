@@ -7,7 +7,7 @@ from django.contrib import messages
 
 from cloudinary.uploader import destroy
 
-from .models import Topic, Entry, Comment, Files, Images
+from .models import Topic, Entry, Comment, Files, Images, ComplaintTopic, ComplaintComment
 from .forms import TopicForm, EntryForm, CommentForm, FileForm, ImageForm, ComplaintTopicForm, ComplaintCommentForm
 
 # Create your views here.
@@ -346,13 +346,12 @@ def add_comment(request, entry_id):
 @check_blocked
 @login_required
 def edit_comment(request, comment_id):
-    comment = get_object_or_404(Comment, id=comment_id)
-    topic = comment.entry.topic
-    check_owner(request, topic)
+    comment = get_object_or_404(Comment, pk=comment_id)
     
-    if comment.owner != request.user:
+    
+    if comment.owner != request.user and comment.entry.topic.owner != request.user:
         messages.error(request, "You cannot edit this comment.")
-        return redirect('learning_logs:entry_detail', entry_id = comment.entry.id)
+        return redirect('learning_logs:entry_detail', entry_id=comment.entry.id)
     
     if request.method != 'POST':
         form = CommentForm(instance=comment)
@@ -369,9 +368,8 @@ def edit_comment(request, comment_id):
 @check_blocked
 @login_required
 def delete_comment(request, comment_id):
-    comment = get_object_or_404(Comment, id=comment_id)
-    topic = comment.entry.topic
-    check_owner(request, topic)
+    comment = get_object_or_404(Comment, pk=comment_id)
+    
     
     if comment.owner != request.user:
         messages.error(request, "You cannot delete this comment.")
@@ -389,37 +387,83 @@ def delete_comment(request, comment_id):
 @login_required
 @check_blocked
 def create_complaint_topic(request, topic_id):
-    topic = get_object_or_404(Topic, id=topic_id)
-    offender = topic.owner  # вважаємо, що власник теми = порушник
+    topic = get_object_or_404(Topic, pk=topic_id)
+
+    # Не можна скаржитись на себе
+    if topic.owner == request.user:
+        messages.error(request, "You cannot complain about your own topic.")
+        return redirect("learning_logs:topic", topic_id=topic.id)
+
+    # Заборона дублюючих скарг
+    if ComplaintTopic.objects.filter(owner=request.user, topic=topic).exists():
+        messages.warning(request, "You have already complained about this topic.")
+        return redirect("learning_logs:topic", topic_id=topic.id)
+
+    offender = topic.owner
 
     if request.method == "POST":
-        form = ComplaintTopicForm(request.POST, owner=request.user, topic=topic, offender=offender)
+        form = ComplaintTopicForm(
+            request.POST,
+            owner=request.user,
+            topic=topic,
+            offender=offender
+        )
         if form.is_valid():
             form.save()
             messages.success(request, "Your complaint has been submitted.")
             return redirect("learning_logs:topic", topic_id=topic.id)
     else:
-        form = ComplaintTopicForm(owner=request.user, topic=topic, offender=offender)
+        form = ComplaintTopicForm(
+            owner=request.user,
+            topic=topic,
+            offender=offender
+        )
 
-    return render(request, "learning_logs/create_complaint.html", {"form": form, "data": topic})
+    return render(request, "learning_logs/create_complaint.html", {
+        "form": form,
+        "data": topic
+    })
 
 
 @login_required
 @check_blocked
 def create_complaint_comment(request, comment_id):
-    comment = get_object_or_404(Comment, id=comment_id)
-    offender = comment.owner  # вважаємо, що власник коментаря = порушник
+    comment = get_object_or_404(Comment, pk=comment_id)
+
+    # Не можна скаржитись на себе
+    if comment.owner == request.user:
+        messages.error(request, "You cannot complain about your own comment.")
+        return redirect("learning_logs:entry_detail", entry_id=comment.entry.id)
+
+    # Заборона дублюючих скарг
+    if ComplaintComment.objects.filter(owner=request.user, comment=comment).exists():
+        messages.warning(request, "You have already complained about this comment.")
+        return redirect("learning_logs:entry_detail", entry_id=comment.entry.id)
+
+    offender = comment.owner
 
     if request.method == "POST":
-        form = ComplaintCommentForm(request.POST, owner=request.user, comment=comment, offender=offender)
+        form = ComplaintCommentForm(
+            request.POST,
+            owner=request.user,
+            comment=comment,
+            offender=offender
+        )
         if form.is_valid():
             form.save()
             messages.success(request, "Your complaint has been submitted.")
             return redirect("learning_logs:entry_detail", entry_id=comment.entry.id)
     else:
-        form = ComplaintCommentForm(owner=request.user, comment=comment, offender=offender)
+        form = ComplaintCommentForm(
+            owner=request.user,
+            comment=comment,
+            offender=offender
+        )
 
-    return render(request, "learning_logs/create_complaint.html", {"form": form, "data": comment})
+    return render(request, "learning_logs/create_complaint.html", {
+        "form": form,
+        "data": comment
+    })
 
 
 def community(request):

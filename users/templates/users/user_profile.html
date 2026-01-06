@@ -41,7 +41,7 @@
         <a href="{% url 'learning_logs:publish_topic' topic.id %}" class="btn btn-outline-dark btn-sm">unpublish topic</a>
       {% endif %}
       {% if topic.owner != request_user %}
-        <a href="{% url 'learning_logs:create_complaint' topic.id %}" class="btn btn-outline-danger btn-sm">🚩 To complain</a>
+        <a href="{% url 'learning_logs:create_complaint_topic' topic.id %}" class="btn btn-outline-danger btn-sm">🚩 To complain</a>
       {% endif %}
     </div>
   </div>
